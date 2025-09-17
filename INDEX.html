@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Montagem - Minha Fábrica</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7f9;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            color: #7f8c8d;
+            font-size: 16px;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            border-left: 4px solid #3498db;
+        }
+        
+        .card h3 {
+            color: #7f8c8d;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .card .value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .card.pendente { border-left-color: #e74c3c; }
+        .card.parcial { border-left-color: #f39c12; }
+        .card.concluido { border-left-color: #2ecc71; }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+            font-weight: 500;
+        }
+        
+        .tab.active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+            background: white;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        tr:hover {
+            background-color: #f5f7f9;
+        }
+        
+        .status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            display: inline-block;
+        }
+        
+        .status-pendente {
+            background-color: #ffeded;
+            color: #e74c3c;
+        }
+        
+        .status-parcial {
+            background-color: #fff4e6;
+            color: #f39c12;
+        }
+        
+        .status-concluido {
+            background-color: #e6f7ee;
+            color: #2ecc71;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #2980b9;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn-secondary {
+            background: #95a5a6;
+        }
+        
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        
+        .btn-success {
+            background: #2ecc71;
+        }
+        
+        .btn-success:hover {
+            background: #27ae60;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .progress {
+            height: 100%;
+            background: #3498db;
+            border-radius: 5px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 500px;
+            max-width: 90%;
+        }
+        
+        .pedido-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            background-color: #e1f0ff;
+            color: #2c3e50;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .filtros {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .filtro-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                margin-bottom: 5px;
+                border-radius: 5px;
+                border: 1px solid #ddd;
+            }
+            
+            .tab.active {
+                border-radius: 5px 5px 0 0;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+            
+            .filtros {
+                flex-direction: column;
+            }
+            
+            .filtro-group {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Controle de Montagem - Minha Fábrica</h1>
+            <p class="description">Controle completo de materiais e montagem na linha de produção</p>
+        </header>
+        
+        <div class="dashboard">
+            <div class="card">
+                <h3>Itens Pendentes</h3>
+                <div class="value" id="pendentes">0</div>
+            </div>
+            <div class="card parcial">
+                <h3>Montagem Parcial</h3>
+                <div class="value" id="parciais">0</div>
+            </div>
+            <div class="card concluido">
+                <h3>Itens Concluídos</h3>
+                <div class="value" id="concluidos">0</div>
+            </div>
+            <div class="card">
+                <h3>Total de Materiais</h3>
+                <div class="value" id="total-materiais">0</div>
+            </div>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="materiais">Lista de Materiais</div>
+            <div class="tab" data-tab="controle">Controle de Montagem</div>
+            <div class="tab" data-tab="relatorio">Relatórios</div>
+            <div class="tab" data-tab="pedidos">Gestão de Pedidos</div>
+        </div>
+        
+        <div class="tab-content active" id="materiais">
+            <h2>Lista de Materiais</h2>
+            
+            <div class="filtros">
+                <div class="filtro-group">
+                    <label for="filtro-pedido-material">Filtrar por Pedido:</label>
+                    <select id="filtro-pedido-material">
+                        <option value="">Todos os Pedidos</option>
+                        <!-- Opções preenchidas via JavaScript -->
+                    </select>
+                </div>
+                <div class="filtro-group">
+                    <label for="filtro-status-material">Filtrar por Status:</label>
+                    <select id="filtro-status-material">
+                        <option value="">Todos os Status</option>
+                        <option value="Pendente">Pendente</option>
+                        <option value="Parcial">Parcial</option>
+                        <option value="Concluído">Concluído</option>
+                    </select>
+                </div>
+            </div>
+            
+            <table id="tabela-materiais">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Descrição</th>
+                        <th>Pedido</th>
+                        <th>Quant. Total</th>
+                        <th>Quant. Recebida</th>
+                        <th>Quant. Montada</th>
+                        <th>Saldo</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Os dados serão preenchidos via JavaScript -->
+                </tbody>
+            </table>
+            
+            <button id="btn-novo-material">+ Adicionar Material</button>
+            
+            <div id="form-material" style="display: none; margin-top: 20px;">
+                <h3 id="titulo-form-material">Adicionar Novo Material</h3>
+                <div class="form-group">
+                    <label for="codigo">Código:</label>
+                    <input type="text" id="codigo" placeholder="Ex: M001">
+                </div>
+                <div class="form-group">
+                    <label for="descricao">Descrição:</label>
+                    <input type="text" id="descricao" placeholder="Ex: Parafuso 6mm">
+                </div>
+                <div class="form-group">
+                    <label for="pedido-material">Nº do Pedido:</label>
+                    <select id="pedido-material">
+                        <option value="">Sem pedido específico</option>
+                        <!-- Opções preenchidas via JavaScript -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="quantidade">Quantidade Total:</label>
+                    <input type="number" id="quantidade" placeholder="Ex: 100" min="1">
+                </div>
+                <div class="actions">
+                    <button id="btn-salvar-material" class="btn-success">Salvar Material</button>
+                    <button id="btn-cancelar-material" class="btn-secondary">Cancelar</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="controle">
+            <h2>Controle de Montagem</h2>
+            
+            <div class="filtros">
+                <div class="filtro-group">
+                    <label for="filtro-material">Filtrar por Material:</label>
+                    <select id="filtro-material">
+                        <option value="">Todos os Materiais</option>
+                        <!-- Opções preenchidas via JavaScript -->
+                    </select>
+                </div>
+                <div class="filtro-group">
+                    <label for="filtro-pedido">Filtrar por Pedido:</label>
+                    <select id="filtro-pedido">
+                        <option value="">Todos os Pedidos</option>
+                        <!-- Opções preenchidas via JavaScript -->
+                    </select>
+                </div>
+            </div>
+            
+            <table id="tabela-controle">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Pedido</th>
+                        <th>Código</th>
+                        <th>Descrição</th>
+                        <th>Operação</th>
+                        <th>Quantidade</th>
+                        <th>Responsável</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Os dados serão preenchidos via JavaScript -->
+                </tbody>
+            </table>
+            
+            <div style="margin-top: 30px;">
+                <h3>Registrar Nova Operação</h3>
+                <div class="form-group">
+                    <label for="operacao-material">Material:</label>
+                    <select id="operacao-material">
+                        <!-- Opções preenchidas via JavaScript -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="tipo-operacao">Tipo de Operação:</label>
+                    <select id="tipo-operacao">
+                        <option value="recebimento">Recebimento de Material</option>
+                        <option value="montagem">Montagem</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="quantidade-operacao">Quantidade:</label>
+                    <input type="number" id="quantidade-operacao" placeholder="Quantidade" min="1">
+                </div>
+                <div class="form-group">
+                    <label for="responsavel">Responsável:</label>
+                    <input type="text" id="responsavel" placeholder="Nome do responsável">
+                </div>
+                <button id="btn-registrar-operacao">Registrar Operação</button>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="relatorio">
+            <h2>Relatórios e Estatísticas</h2>
+            
+            <div class="card">
+                <h3>Progresso Geral de Montagem</h3>
+                <div class="progress-bar">
+                    <div class="progress" id="progresso-geral" style="width: 0%"></div>
+                </div>
+                <div id="percentual-geral" style="text-align: center; margin-top: 10px; font-weight: bold;">0%</div>
+            </div>
+            
+            <div style="margin: 30px 0;">
+                <h3>Materiais por Status</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>Quantidade</th>
+                            <th>Percentual</th>
+                        </tr>
+                    </thead>
+                    <tbody id="status-table">
+                        <!-- Preenchido via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div style="margin: 30px 0;">
+                <h3>Progresso por Pedido</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Pedido</th>
+                            <th>Materiais</th>
+                            <th>Concluídos</th>
+                            <th>Progresso</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pedidos-table">
+                        <!-- Preenchido via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div>
+                <h3>Exportar Dados</h3>
+                <p>Exporte os dados para análise em outros sistemas:</p>
+                <div class="actions">
+                    <button id="btn-exportar-csv">Exportar para CSV</button>
+                    <button id="btn-exportar-pdf" class="btn-secondary">Gerar Relatório PDF</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="pedidos">
+            <h2>Gestão de Pedidos</h2>
+            
+            <button id="btn-novo-pedido">+ Novo Pedido</button>
+            
+            <div id="form-pedido" style="display: none; margin-top: 20px;">
+                <h3 id="titulo-form-pedido">Adicionar Novo Pedido</h3>
+                <div class="form-group">
+                    <label for="numero-pedido">Número do Pedido:</label>
+                    <input type="text" id="numero-pedido" placeholder="Ex: PED2023001">
+                </div>
+                <div class="form-group">
+                    <label for="cliente-pedido">Cliente:</label>
+                    <input type="text" id="cliente-pedido" placeholder="Nome do cliente">
+                </div>
+                <div class="form-group">
+                    <label for="descricao-pedido">Descrição:</label>
+                    <input type="text" id="descricao-pedido" placeholder="Descrição do pedido">
+                </div>
+                <div class="form-group">
+                    <label for="prioridade-pedido">Prioridade:</label>
+                    <select id="prioridade-pedido">
+                        <option value="baixa">Baixa</option>
+                        <option value="media" selected>Média</option>
+                        <option value="alta">Alta</option>
+                        <option value="urgente">Urgente</option>
+                    </select>
+                </div>
+                <div class="actions">
+                    <button id="btn-salvar-pedido" class="btn-success">Salvar Pedido</button>
+                    <button id="btn-cancelar-pedido" class="btn-secondary">Cancelar</button>
+                </div>
+            </div>
+            
+            <table id="tabela-pedidos" style="margin-top: 20px;">
+                <thead>
+                    <tr>
+                        <th>Número</th>
+                        <th>Cliente</th>
+                        <th>Descrição</th>
+                        <th>Prioridade</th>
+                        <th>Materiais</th>
+                        <th>Progresso</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Os dados serão preenchidos via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal para edição de material -->
+    <div class="modal" id="modal-edicao">
+        <div class="modal-content">
+            <h3>Editar Material</h3>
+            <div class="form-group">
+                <label for="editar-codigo">Código:</label>
+                <input type="text" id="editar-codigo" disabled>
+            </div>
+            <div class="form-group">
+                <label for="editar-descricao">Descrição:</label>
+                <input type="text" id="editar-descricao">
+            </div>
+            <div class="form-group">
+                <label for="editar-pedido">Nº do Pedido:</label>
+                <select id="editar-pedido">
+                    <option value="">Sem pedido específico</option>
+                    <!-- Opções preenchidas via JavaScript -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="editar-quantidade">Quantidade Total:</label>
+                <input type="number" id="editar-quantidade" min="1">
+            </div>
+            <div class="form-group">
+                <label for="editar-recebida">Quantidade Recebida:</label>
+                <input type="number" id="editar-recebida" min="0">
+            </div>
+            <div class="form-group">
+                <label for="editar-montada">Quantidade Montada:</label>
+                <input type="number" id="editar-montada" min="0">
+            </div>
+            <div class="actions">
+                <button id="btn-salvar-edicao" class="btn-success">Salvar Alterações</button>
+                <button id="btn-cancelar-edicao" class="btn-secondary">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variáveis globais
+        let materiais = [];
+        let operacoes = [];
+        let pedidos = [];
+        let materialEditando = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Carregar dados do localStorage
+            carregarDados();
+            
+            // Elementos da interface
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            // Sistema de abas
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-tab');
+                    
+                    // Desativa todas as abas
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(tc => tc.classList.remove('active'));
+                    
+                    // Ativa a aba clicada
+                    tab.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    // Se for a aba de pedidos, atualiza a tabela
+                    if (tabId === 'pedidos') {
+                        atualizarTabelaPedidos();
+                    }
+                });
+            });
+            
+            // Função para calcular o status de um material
+            function calcularStatus(material) {
+                if (material.quantidadeMontada === material.quantidadeTotal) {
+                    return "Concluído";
+                } else if (material.quantidadeMontada > 0) {
+                    return "Parcial";
+                } else {
+                    return "Pendente";
+                }
+            }
+            
+            // Função para obter informações do pedido
+            function obterPedido(id) {
+                return pedidos.find(p => p.id === id) || { numero: "N/A", cliente: "N/A" };
+            }
+            
+            // Função para atualizar a tabela de materiais
+            function atualizarTabelaMateriais() {
+                const tbody = document.querySelector('#tabela-materiais tbody');
+                tbody.innerHTML = '';
+                
+                // Obter filtros selecionados
+                const filtroPedidoId = document.getElementById('filtro-pedido-material').value;
+                const filtroStatus = document.getElementById('filtro-status-material').value;
+                
+                // Filtrar materiais se necessário
+                let materiaisFiltrados = materiais;
+                
+                if (filtroPedidoId) {
+                    materiaisFiltrados = materiaisFiltrados.filter(m => m.pedidoId == filtroPedidoId);
+                }
+                
+                if (filtroStatus) {
+                    materiaisFiltrados = materiaisFiltrados.filter(m => calcularStatus(m) === filtroStatus);
+                }
+                
+                materiaisFiltrados.forEach(material => {
+                    const saldo = material.quantidadeTotal - material.quantidadeRecebida;
+                    const status = calcularStatus(material);
+                    const statusClass = status.toLowerCase();
+                    const pedido = material.pedidoId ? obterPedido(material.pedidoId) : null;
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${material.codigo}</td>
+                        <td>${material.descricao}</td>
+                        <td>${pedido ? `<span class="pedido-badge">${pedido.numero}</span>` : '---'}</td>
+                        <td>${material.quantidadeTotal}</td>
+                        <td>${material.quantidadeRecebida}</td>
+                        <td>${material.quantidadeMontada}</td>
+                        <td>${saldo}</td>
+                        <td><span class="status status-${statusClass}">${status}</span></td>
+                        <td>
+                            <button onclick="editarMaterial(${material.id})">Editar</button>
+                            <button onclick="excluirMaterial(${material.id})" class="btn-danger">Excluir</button>
+                        </td>
+                    `;
+                    
+                    tbody.appendChild(row);
+                });
+                
+                atualizarDashboard();
+                atualizarFiltros();
+                salvarDados();
+            }
+            
+            // Função para atualizar a tabela de controle
+            function atualizarTabelaControle() {
+                const tbody = document.querySelector('#tabela-controle tbody');
+                tbody.innerHTML = '';
+                
+                // Obter filtros selecionados
+                const filtroMaterialId = document.getElementById('filtro-material').value;
+                const filtroPedidoId = document.getElementById('filtro-pedido').value;
+                
+                // Filtrar operações se necessário
+                let operacoesFiltradas = operacoes;
+                
+                if (filtroMaterialId) {
+                    operacoesFiltradas = operacoesFiltradas.filter(op => op.materialId == filtroMaterialId);
+                }
+                
+                if (filtroPedidoId) {
+                    // Primeiro encontrar os materiais deste pedido
+                    const materiaisDoPedido = materiais.filter(m => m.pedidoId == filtroPedidoId);
+                    const materiaisIds = materiaisDoPedido.map(m => m.id);
+                    
+                    // Filtrar operações por materiais deste pedido
+                    operacoesFiltradas = operacoesFiltradas.filter(op => materiaisIds.includes(op.materialId));
+                }
+                
+                // Ordenar operações por data (mais recente primeiro)
+                const operacoesOrdenadas = [...operacoesFiltradas].sort((a, b) => new Date(b.data) - new Date(a.data));
+                
+                operacoesOrdenadas.forEach(op => {
+                    const material = materiais.find(m => m.id === op.materialId);
+                    if (!material) return;
+                    
+                    const pedido = material.pedidoId ? obterPedido(material.pedidoId) : null;
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${formatarData(op.data)}</td>
+                        <td>${pedido ? `<span class="pedido-badge">${pedido.numero}</span>` : '---'}</td>
+                        <td>${material.codigo}</td>
+                        <td>${material.descricao}</td>
+                        <td>${op.tipo === 'recebimento' ? 'Recebimento' : 'Montagem'}</td>
+                        <td>${op.quantidade}</td>
+                        <td>${op.responsavel}</td>
+                    `;
+                    
+                    tbody.appendChild(row);
+                });
+                
+                salvarDados();
+            }
+            
+            // Função para atualizar a tabela de pedidos
+            function atualizarTabelaPedidos() {
+                const tbody = document.querySelector('#tabela-pedidos tbody');
+                tbody.innerHTML = '';
+                
+                pedidos.forEach(pedido => {
+                    // Encontrar materiais deste pedido
+                    const materiaisDoPedido = materiais.filter(m => m.pedidoId === pedido.id);
+                    const totalMateriais = materiaisDoPedido.length;
+                    
+                    // Calcular progresso
+                    const concluidos = materiaisDoPedido.filter(m => calcularStatus(m) === "Concluído").length;
+                    const progresso = totalMateriais > 0 ? Math.round((concluidos / totalMateriais) * 100) : 0;
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${pedido.numero}</td>
+                        <td>${pedido.cliente}</td>
+                        <td>${pedido.descricao}</td>
+                        <td><span class="status status-${pedido.prioridade}">${pedido.prioridade}</span></td>
+                        <td>${totalMateriais}</td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress" style="width: ${progresso}%"></div>
+                            </div>
+                            <div style="text-align: center; margin-top: 5px;">${progresso}%</div>
+                        </td>
+                        <td>
+                            <button onclick="visualizarPedido(${pedido.id})">Visualizar</button>
+                            <button onclick="editarPedido(${pedido.id})">Editar</button>
+                            <button onclick="excluirPedido(${pedido.id})" class="btn-danger">Excluir</button>
+                        </td>
+                    `;
+                    
+                    tbody.appendChild(row);
+                });
+            }
+            
+            // Função para formatar data
+            function formatarData(dataString) {
+                const data = new Date(dataString);
+                return data.toLocaleDateString('pt-BR');
+            }
+            
+            // Função para atualizar os dados do dashboard
+            function atualizarDashboard() {
+                let pendentes = 0;
+                let parciais = 0;
+                let concluidos = 0;
+                
+                materiais.forEach(material => {
+                    const status = calcularStatus(material);
+                    if (status === "Pendente") pendentes++;
+                    if (status === "Parcial") parciais++;
+                    if (status === "Concluído") concluidos++;
+                });
+                
+                document.getElementById('pendentes').textContent = pendentes;
+                document.getElementById('parciais').textContent = parciais;
+                document.getElementById('concluidos').textContent = concluidos;
+                document.getElementById('total-materiais').textContent = materiais.length;
+                
+                // Atualizar relatórios
+                atualizarRelatorios();
+            }
+            
+            // Função para atualizar os relatórios
+            function atualizarRelatorios() {
+                // Atualizar tabela de status
+                const statusTable = document.getElementById('status-table');
+                statusTable.innerHTML = '';
+                
+                const statusCount = {
+                    'Pendente': 0,
+                    'Parcial': 0,
+                    'Concluído': 0
+                };
+                
+                materiais.forEach(material => {
+                    const status = calcularStatus(material);
+                    statusCount[status]++;
+                });
+                
+                for (const [status, count] of Object.entries(statusCount)) {
+                    const percentual = materiais.length > 0 ? ((count / materiais.length) * 100).toFixed(1) : 0;
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${status}</td>
+                        <td>${count}</td>
+                        <td>${percentual}%</td>
+                    `;
+                    
+                    statusTable.appendChild(row);
+                }
+                
+                // Calcular progresso geral
+                const totalMontado = materiais.reduce((sum, m) => sum + m.quantidadeMontada, 0);
+                const totalNecessario = materiais.reduce((sum, m) => sum + m.quantidadeTotal, 0);
+                const percentualGeral = totalNecessario > 0 ? ((totalMontado / totalNecessario) * 100).toFixed(1) : 0;
+                
+                document.getElementById('progresso-geral').style.width = `${percentualGeral}%`;
+                document.getElementById('percentual-geral').textContent = `${percentualGeral}%`;
+                
+                // Atualizar tabela de pedidos no relatório
+                const pedidosTable = document.getElementById('pedidos-table');
+                pedidosTable.innerHTML = '';
+                
+                pedidos.forEach(pedido => {
+                    // Encontrar materiais deste pedido
+                    const materiaisDoPedido = materiais.filter(m => m.pedidoId === pedido.id);
+                    const totalMateriais = materiaisDoPedido.length;
+                    
+                    // Calcular progresso
+                    const concluidos = materiaisDoPedido.filter(m => calcularStatus(m) === "Concluído").length;
+                    const progresso = totalMateriais > 0 ? Math.round((concluidos / totalMateriais) * 100) : 0;
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${pedido.numero}</td>
+                        <td>${totalMateriais}</td>
+                        <td>${concluidos}</td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress" style="width: ${progresso}%"></div>
+                            </div>
+                            <div style="text-align: center; margin-top: 5px;">${progresso}%</div>
+                        </td>
+                    `;
+                    
+                    pedidosTable.appendChild(row);
+                });
+            }
+            
+            // Função para atualizar os filtros e seletores
+            function atualizarFiltros() {
+                const filtroMaterial = document.getElementById('filtro-material');
+                const operacaoMaterial = document.getElementById('operacao-material');
+                const pedidoMaterial = document.getElementById('pedido-material');
+                const filtroPedido = document.getElementById('filtro-pedido');
+                const filtroPedidoMaterial = document.getElementById('filtro-pedido-material');
+                const editarPedido = document.getElementById('editar-pedido');
+                
+                // Limpar opções atuais
+                filtroMaterial.innerHTML = '<option value="">Todos os Materiais</option>';
+                operacaoMaterial.innerHTML = '';
+                pedidoMaterial.innerHTML = '<option value="">Sem pedido específico</option>';
+                filtroPedido.innerHTML = '<option value="">Todos os Pedidos</option>';
+                filtroPedidoMaterial.innerHTML = '<option value="">Todos os Pedidos</option>';
+                if (editarPedido) {
+                    editarPedido.innerHTML = '<option value="">Sem pedido específico</option>';
+                }
+                
+                // Adicionar materiais aos seletores
+                materiais.forEach(material => {
+                    const option1 = document.createElement('option');
+                    option1.value = material.id;
+                    option1.textContent = `${material.codigo} - ${material.descricao}`;
+                    
+                    const option2 = document.createElement('option');
+                    option2.value = material.id;
+                    option2.textContent = `${material.codigo} - ${material.descricao}`;
+                    
+                    filtroMaterial.appendChild(option1);
+                    operacaoMaterial.appendChild(option2);
+                });
+                
+                // Adicionar pedidos aos seletores
+                pedidos.forEach(pedido => {
+                    const option1 = document.createElement('option');
+                    option1.value = pedido.id;
+                    option1.textContent = `${pedido.numero} - ${pedido.cliente}`;
+                    
+                    const option2 = document.createElement('option');
+                    option2.value = pedido.id;
+                    option2.textContent = `${pedido.numero} - ${pedido.cliente}`;
+                    
+                    const option3 = document.createElement('option');
+                    option3.value = pedido.id;
+                    option3.textContent = `${pedido.numero} - ${pedido.cliente}`;
+                    
+                    const option4 = document.createElement('option');
+                    option4.value = pedido.id;
+                    option4.textContent = `${pedido.numero} - ${pedido.cliente}`;
+                    
+                    pedidoMaterial.appendChild(option1);
+                    filtroPedido.appendChild(option2);
+                    filtroPedidoMaterial.appendChild(option3);
+                    
+                    if (editarPedido) {
+                        const option5 = document.createElement('option');
+                        option5.value = pedido.id;
+                        option5.textContent = `${pedido.numero} - ${pedido.cliente}`;
+                        editarPedido.appendChild(option5);
+                    }
+                });
+            }
+            
+            // Função para adicionar novo material
+            document.getElementById('btn-novo-material').addEventListener('click', function() {
+                document.getElementById('form-material').style.display = 'block';
+                document.getElementById('titulo-form-material').textContent = 'Adicionar Novo Material';
+            });
+            
+            document.getElementById('btn-cancelar-material').addEventListener('click', function() {
+                document.getElementById('form-material').style.display = 'none';
+                document.getElementById('codigo').value = '';
+                document.getElementById('descricao').value = '';
+                document.getElementById('quantidade').value = '';
+            });
+            
+            document.getElementById('btn-salvar-material').addEventListener('click', function() {
+                const codigo = document.getElementById('codigo').value.trim();
+                const descricao = document.getElementById('descricao').value.trim();
+                const pedidoId = document.getElementById('pedido-material').value ? parseInt(document.getElementById('pedido-material').value) : null;
+                const quantidade = parseInt(document.getElementById('quantidade').value);
+                
+                if (codigo && descricao && quantidade && quantidade > 0) {
+                    // Verificar se código já existe
+                    if (materiais.some(m => m.codigo === codigo)) {
+                        alert('Já existe um material com este código.');
+                        return;
+                    }
+                    
+                    const novoId = materiais.length > 0 ? Math.max(...materiais.map(m => m.id)) + 1 : 1;
+                    
+                    materiais.push({
+                        id: novoId,
+                        codigo: codigo,
+                        descricao: descricao,
+                        pedidoId: pedidoId,
+                        quantidadeTotal: quantidade,
+                        quantidadeRecebida: 0,
+                        quantidadeMontada: 0
+                    });
+                    
+                    atualizarTabelaMateriais();
+                    document.getElementById('form-material').style.display = 'none';
+                    document.getElementById('codigo').value = '';
+                    document.getElementById('descricao').value = '';
+                    document.getElementById('quantidade').value = '';
+                    
+                    alert('Material adicionado com sucesso!');
+                } else {
+                    alert('Por favor, preencha todos os campos corretamente.');
+                }
+            });
+            
+            // Função para adicionar novo pedido
+            document.getElementById('btn-novo-pedido').addEventListener('click', function() {
+                document.getElementById('form-pedido').style.display = 'block';
+                document.getElementById('titulo-form-pedido').textContent = 'Adicionar Novo Pedido';
+            });
+            
+            document.getElementById('btn-cancelar-pedido').addEventListener('click', function() {
+                document.getElementById('form-pedido').style.display = 'none';
+                document.getElementById('numero-pedido').value = '';
+                document.getElementById('cliente-pedido').value = '';
+                document.getElementById('descricao-pedido').value = '';
+            });
+            
+            document.getElementById('btn-salvar-pedido').addEventListener('click', function() {
+                const numero = document.getElementById('numero-pedido').value.trim();
+                const cliente = document.getElementById('cliente-pedido').value.trim();
+                const descricao = document.getElementById('descricao-pedido').value.trim();
+                const prioridade = document.getElementById('prioridade-pedido').value;
+                
+                if (numero && cliente && descricao) {
+                    // Verificar se número já existe
+                    if (pedidos.some(p => p.numero === numero)) {
+                        alert('Já existe um pedido com este número.');
+                        return;
+                    }
+                    
+                    const novoId = pedidos.length > 0 ? Math.max(...pedidos.map(p => p.id)) + 1 : 1;
+                    
+                    pedidos.push({
+                        id: novoId,
+                        numero: numero,
+                        cliente: cliente,
+                        descricao: descricao,
+                        prioridade: prioridade
+                    });
+                    
+                    atualizarTabelaPedidos();
+                    atualizarFiltros();
+                    document.getElementById('form-pedido').style.display = 'none';
+                    document.getElementById('numero-pedido').value = '';
+                    document.getElementById('cliente-pedido').value = '';
+                    document.getElementById('descricao-pedido').value = '';
+                    
+                    alert('Pedido adicionado com sucesso!');
+                } else {
+                    alert('Por favor, preencha todos os campos corretamente.');
+                }
+            });
+            
+            // Função para registrar nova operação
+            document.getElementById('btn-registrar-operacao').addEventListener('click', function() {
+                const materialId = parseInt(document.getElementById('operacao-material').value);
+                const tipo = document.getElementById('tipo-operacao').value;
+                const quantidade = parseInt(document.getElementById('quantidade-operacao').value);
+                const responsavel = document.getElementById('responsavel').value.trim();
+                
+                if (materialId && quantidade && quantidade > 0 && responsavel) {
+                    const material = materiais.find(m => m.id === materialId);
+                    
+                    if (tipo === 'recebimento') {
+                        material.quantidadeRecebida += quantidade;
+                    } else if (tipo === 'montagem') {
+                        const saldoDisponivel = material.quantidadeRecebida - material.quantidadeMontada;
+                        if (quantidade > saldoDisponivel) {
+                            alert(`Quantidade de montagem (${quantidade}) não pode ser maior que o saldo disponível (${saldoDisponivel}).`);
+                            return;
+                        }
+                        material.quantidadeMontada += quantidade;
+                    }
+                    
+                    // Registrar a operação
+                    const novaOperacaoId = operacoes.length > 0 ? Math.max(...operacoes.map(o => o.id)) + 1 : 1;
+                    const hoje = new Date().toISOString().split('T')[0];
+                    
+                    operacoes.push({
+                        id: novaOperacaoId,
+                        data: hoje,
+                        materialId: materialId,
+                        tipo: tipo,
+                        quantidade: quantidade,
+                        responsavel: responsavel
+                    });
+                    
+                    atualizarTabelaMateriais();
+                    atualizarTabelaControle();
+                    
+                    // Limpar o formulário
+                    document.getElementById('quantidade-operacao').value = '';
+                    document.getElementById('responsavel').value = '';
+                    
+                    alert('Operação registrada com sucesso!');
+                } else {
+                    alert('Por favor, preencha todos os campos corretamente.');
+                }
+            });
+            
+            // Filtro de materiais
+            document.getElementById('filtro-material').addEventListener('change', function() {
+                atualizarTabelaControle();
+            });
+            
+            // Filtro de pedidos no controle
+            document.getElementById('filtro-pedido').addEventListener('change', function() {
+                atualizarTabelaControle();
+            });
+            
+            // Filtro de pedidos na lista de materiais
+            document.getElementById('filtro-pedido-material').addEventListener('change', function() {
+                atualizarTabelaMateriais();
+            });
+            
+            // Filtro de status na lista de materiais
+            document.getElementById('filtro-status-material').addEventListener('change', function() {
+                atualizarTabelaMateriais();
+            });
+            
+            // Função para exportar dados para CSV
+            document.getElementById('btn-exportar-csv').addEventListener('click', function() {
+                exportarParaCSV();
+            });
+            
+            document.getElementById('btn-exportar-pdf').addEventListener('click', function() {
+                alert('Funcionalidade de exportação PDF será implementada em uma versão futura.');
+            });
+            
+            // Modal de edição
+            document.getElementById('btn-cancelar-edicao').addEventListener('click', function() {
+                document.getElementById('modal-edicao').style.display = 'none';
+            });
+            
+            document.getElementById('btn-salvar-edicao').addEventListener('click', function() {
+                if (materialEditando) {
+                    const descricao = document.getElementById('editar-descricao').value.trim();
+                    const pedidoId = document.getElementById('editar-pedido').value ? parseInt(document.getElementById('editar-pedido').value) : null;
+                    const quantidadeTotal = parseInt(document.getElementById('editar-quantidade').value);
+                    const quantidadeRecebida = parseInt(document.getElementById('editar-recebida').value);
+                    const quantidadeMontada = parseInt(document.getElementById('editar-montada').value);
+                    
+                    if (descricao && quantidadeTotal > 0 && quantidadeRecebida >= 0 && 
+                        quantidadeMontada >= 0 && quantidadeMontada <= quantidadeRecebida &&
+                        quantidadeRecebida <= quantidadeTotal) {
+                        
+                        materialEditando.descricao = descricao;
+                        materialEditando.pedidoId = pedidoId;
+                        materialEditando.quantidadeTotal = quantidadeTotal;
+                        materialEditando.quantidadeRecebida = quantidadeRecebida;
+                        materialEditando.quantidadeMontada = quantidadeMontada;
+                        
+                        atualizarTabelaMateriais();
+                        document.getElementById('modal-edicao').style.display = 'none';
+                        materialEditando = null;
+                        
+                        alert('Material atualizado com sucesso!');
+                    } else {
+                        alert('Por favor, preencha todos os campos corretamente. A quantidade montada não pode ser maior que a recebida, e a recebida não pode ser maior que a total.');
+                    }
+                }
+            });
+            
+            // Inicializar a aplicação
+            atualizarTabelaMateriais();
+            atualizarTabelaControle();
+            atualizarDashboard();
+            atualizarFiltros();
+        });
+        
+        // Função para carregar dados do localStorage
+        function carregarDados() {
+            const dadosMateriais = localStorage.getItem('materiaisMontagem');
+            const dadosOperacoes = localStorage.getItem('operacoesMontagem');
+            const dadosPedidos = localStorage.getItem('pedidosMontagem');
+            
+            if (dadosMateriais) {
+                materiais = JSON.parse(dadosMateriais);
+            } else {
+                // Dados iniciais de exemplo
+                materiais = [
+                    { id: 1, codigo: "M001", descricao: "Parafuso 6mm", pedidoId: 1, quantidadeTotal: 100, quantidadeRecebida: 80, quantidadeMontada: 45 },
+                    { id: 2, codigo: "M002", descricao: "Porca 6mm", pedidoId: 1, quantidadeTotal: 100, quantidadeRecebida: 100, quantidadeMontada: 100 },
+                    { id: 3, codigo: "M003", descricao: "Arruela 6mm", pedidoId: 2, quantidadeTotal: 100, quantidadeRecebida: 60, quantidadeMontada: 30 },
+                    { id: 4, codigo: "M004", descricao: "Placa de Aço 10x20cm", pedidoId: 2, quantidadeTotal: 50, quantidadeRecebida: 50, quantidadeMontada: 20 }
+                ];
+            }
+            
+            if (dadosOperacoes) {
+                operacoes = JSON.parse(dadosOperacoes);
+            } else {
+                // Dados iniciais de exemplo
+                operacoes = [
+                    { id: 1, data: "2023-10-01", materialId: 1, tipo: "recebimento", quantidade: 50, responsavel: "Fornecedor A" },
+                    { id: 2, data: "2023-10-02", materialId: 1, tipo: "recebimento", quantidade: 30, responsavel: "Fornecedor A" },
+                    { id: 3, data: "2023-10-03", materialId: 1, tipo: "montagem", quantidade: 45, responsavel: "João" },
+                    { id: 4, data: "2023-10-01", materialId: 2, tipo: "recebimento", quantidade: 100, responsavel: "Fornecedor B" },
+                    { id: 5, data: "2023-10-04", materialId: 2, tipo: "montagem", quantidade: 100, responsavel: "Maria" }
+                ];
+            }
+            
+            if (dadosPedidos) {
+                pedidos = JSON.parse(dadosPedidos);
+            } else {
+                // Dados iniciais de exemplo
+                pedidos = [
+                    { id: 1, numero: "PED2023001", cliente: "Cliente A", descricao: "Máquina de Lavar Industrial", prioridade: "alta" },
+                    { id: 2, numero: "PED2023002", cliente: "Cliente B", descricao: "Esteira Transportadora", prioridade: "media" }
+                ];
+            }
+        }
+        
+        // Função para salvar dados no localStorage
+        function salvarDados() {
+            localStorage.setItem('materiaisMontagem', JSON.stringify(materiais));
+            localStorage.setItem('operacoesMontagem', JSON.stringify(operacoes));
+            localStorage.setItem('pedidosMontagem', JSON.stringify(pedidos));
+        }
+        
+        // Função para editar material
+        function editarMaterial(id) {
+            materialEditando = materiais.find(m => m.id === id);
+            if (materialEditando) {
+                document.getElementById('editar-codigo').value = materialEditando.codigo;
+                document.getElementById('editar-descricao').value = materialEditando.descricao;
+                document.getElementById('editar-pedido').value = materialEditando.pedidoId || "";
+                document.getElementById('editar-quantidade').value = materialEditando.quantidadeTotal;
+                document.getElementById('editar-recebida').value = materialEditando.quantidadeRecebida;
+                document.getElementById('editar-montada').value = materialEditando.quantidadeMontada;
+                document.getElementById('modal-edicao').style.display = 'flex';
+            }
+        }
+        
+        // Função para visualizar pedido
+        function visualizarPedido(id) {
+            const pedido = pedidos.find(p => p.id === id);
+            if (pedido) {
+                alert(`Detalhes do Pedido:\nNúmero: ${pedido.numero}\nCliente: ${pedido.cliente}\nDescrição: ${pedido.descricao}\nPrioridade: ${pedido.prioridade}`);
+            }
+        }
+        
+        // Função para editar pedido
+        function editarPedido(id) {
+            const pedido = pedidos.find(p => p.id === id);
+            if (pedido) {
+                document.getElementById('numero-pedido').value = pedido.numero;
+                document.getElementById('cliente-pedido').value = pedido.cliente;
+                document.getElementById('descricao-pedido').value = pedido.descricao;
+                document.getElementById('prioridade-pedido').value = pedido.prioridade;
+                document.getElementById('form-pedido').style.display = 'block';
+                document.getElementById('titulo-form-pedido').textContent = 'Editar Pedido';
+                
+                // Remover o pedido atual para atualização
+                pedidos = pedidos.filter(p => p.id !== id);
+            }
+        }
+        
+        // Função para excluir pedido
+        function excluirPedido(id) {
+            if (confirm('Tem certeza que deseja excluir este pedido? Esta ação não pode ser desfeita.')) {
+                // Verificar se há materiais associados a este pedido
+                const materiaisAssociados = materiais.filter(m => m.pedidoId === id);
+                if (materiaisAssociados.length > 0) {
+                    if (!confirm('Este pedido possui materiais associados. Todos os materiais ficarão sem pedido. Continuar?')) {
+                        return;
+                    }
+                    // Remover associação dos materiais
+                    materiais.forEach(m => {
+                        if (m.pedidoId === id) {
+                            m.pedidoId = null;
+                        }
+                    });
+                }
+                
+                // Remover pedido
+                pedidos = pedidos.filter(p => p.id !== id);
+                atualizarTabelaPedidos();
+                atualizarTabelaMateriais();
+                atualizarFiltros();
+                alert('Pedido excluído com sucesso!');
+            }
+        }
+        
+        // Função para excluir material
+        function excluirMaterial(id) {
+            if (confirm('Tem certeza que deseja excluir este material? Esta ação não pode ser desfeita.')) {
+                // Verificar se há operações associadas a este material
+                const operacoesAssociadas = operacoes.filter(op => op.materialId === id);
+                if (operacoesAssociadas.length > 0) {
+                    if (!confirm('Este material possui operações associadas. Todas as operações serão excluídas. Continuar?')) {
+                        return;
+                    }
+                    // Remover operações associadas
+                    operacoes = operacoes.filter(op => op.materialId !== id);
+                }
+                
+                // Remover material
+                materiais = materiais.filter(m => m.id !== id);
+                atualizarTabelaMateriais();
+                atualizarTabelaControle();
+                alert('Material excluído com sucesso!');
+            }
+        }
+        
+        // Função para exportar dados para CSV
+        function exportarParaCSV() {
+            // Criar CSV para materiais
+            let csvContent = "Dados de Materiais\n";
+            csvContent += "Código,Descrição,Pedido,Quantidade Total,Quantidade Recebida,Quantidade Montada,Saldo,Status\n";
+            
+            materiais.forEach(material => {
+                const saldo = material.quantidadeTotal - material.quantidadeRecebida;
+                const status = calcularStatus(material);
+                const pedido = material.pedidoId ? obterPedido(material.pedidoId) : { numero: "N/A" };
+                
+                csvContent += `"${material.codigo}","${material.descricao}","${pedido.numero}",${material.quantidadeTotal},${material.quantidadeRecebida},${material.quantidadeMontada},${saldo},${status}\n`;
+            });
+            
+            // Adicionar operações ao CSV
+            csvContent += "\nDados de Operações\n";
+            csvContent += "Data,Pedido,Código Material,Descrição Material,Operação,Quantidade,Responsável\n";
+            
+            operacoes.forEach(op => {
+                const material = materiais.find(m => m.id === op.materialId);
+                if (material) {
+                    const pedido = material.pedidoId ? obterPedido(material.pedidoId) : { numero: "N/A" };
+                    
+                    csvContent += `"${formatarData(op.data)}","${pedido.numero}","${material.codigo}","${material.descricao}","${op.tipo === 'recebimento' ? 'Recebimento' : 'Montagem'}",${op.quantidade},"${op.responsavel}"\n`;
+                }
+            });
+            
+            // Adicionar pedidos ao CSV
+            csvContent += "\nDados de Pedidos\n";
+            csvContent += "Número,Cliente,Descrição,Prioridade\n";
+            
+            pedidos.forEach(pedido => {
+                csvContent += `"${pedido.numero}","${pedido.cliente}","${pedido.descricao}","${pedido.prioridade}"\n`;
+            });
+            
+            // Criar arquivo para download
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", "controle_montagem.csv");
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
